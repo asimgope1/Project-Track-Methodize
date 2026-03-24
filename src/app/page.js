@@ -134,13 +134,13 @@ export default function Home() {
 
   return (
     <div className="min-vh-100 d-flex flex-column" style={{ backgroundColor: "#f8f9fa" }}>
-      <header className="py-3 px-4 d-flex justify-content-between align-items-center shadow-sm sticky-top" style={{ background: "#ffffff", zIndex: 10 }}>
-        <h4 className="m-0 fw-bold text-primary">📊 Methodize Project Tracker</h4>
-        <div className="d-flex align-items-center gap-3">
-          <span className="text-secondary fw-semibold">Interactive Mode</span>
+      <header className="py-3 px-3 px-md-4 d-flex flex-column flex-md-row justify-content-between align-items-center shadow-sm sticky-top gap-3" style={{ background: "#ffffff", zIndex: 10 }}>
+        <h4 className="m-0 fw-bold text-primary text-center text-md-start fs-5 fs-md-4">📊 Methodize Project Tracker</h4>
+        <div className="d-flex flex-column flex-sm-row align-items-center gap-2 gap-md-3">
+          <span className="text-secondary fw-semibold fs-7 fs-sm-6 d-none d-sm-inline">Interactive Mode</span>
           <div className="d-flex align-items-center gap-2">
             <span className="fw-bold fs-5">{overallProgress}%</span>
-            <div className="progress rounded-pill shadow-sm" style={{ width: "160px", height: "12px" }}>
+            <div className="progress rounded-pill shadow-sm" style={{ width: "130px", height: "12px" }}>
               <div
                 className="progress-bar bg-success"
                 role="progressbar"
@@ -154,15 +154,16 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="container my-5 flex-grow-1">
-        <div className="d-flex justify-content-between align-items-center mb-4">
+      <main className="container-fluid container-xl my-4 my-md-5 flex-grow-1 px-2 px-md-4">
+        <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3 text-center text-md-start">
           <div>
-            <h3 className="fw-bold mb-1">Development Modules</h3>
-            <p className="text-muted mb-0">Enter the completion percentage (%) for each phase to update the tracker.</p>
+            <h3 className="fw-bold mb-1 fs-4 fs-md-3">Development Modules</h3>
+            <p className="text-muted mb-0 small">Enter the completion percentage (%) for each phase to update the tracker.</p>
           </div>
-          <button
+          <button 
             onClick={() => setIsAddingModule(!isAddingModule)}
-            className="btn btn-primary d-flex align-items-center gap-2 shadow rounded-pill px-4 py-2"
+            className="btn btn-primary d-flex align-items-center justify-content-center gap-2 shadow rounded-pill px-4 py-2 w-100 w-md-auto"
+            style={{ maxWidth: "250px" }}
           >
             <span className="fw-bold fs-5">{isAddingModule ? "×" : "+"}</span>
             {isAddingModule ? "Cancel" : "New Module"}
