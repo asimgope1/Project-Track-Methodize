@@ -24,27 +24,29 @@ export default function Home() {
   const [overallProgress, setOverallProgress] = useState(0);
 
   useEffect(() => {
-    // Calculate overall progress
-    let totalTasks = 0;
-    let completedTasks = 0;
+    let totalPercentSum = 0;
+    let moduleCount = modules.length;
 
     modules.forEach((mod) => {
-      Object.values(mod.tasks).forEach((status) => {
-        totalTasks++;
-        if (status === "completed") completedTasks++;
+      let moduleSum = 0;
+      Object.values(mod.tasks).forEach((val) => {
+        moduleSum += Number(val) || 0;
       });
+      totalPercentSum += moduleSum / 5; // average of 5 tasks is the module's progress
     });
 
-    if (totalTasks > 0) {
-      setOverallProgress(Math.round((completedTasks / totalTasks) * 100));
+    if (moduleCount > 0) {
+      setOverallProgress(Math.round(totalPercentSum / moduleCount));
+    } else {
+      setOverallProgress(0);
     }
   }, [modules]);
 
-  const toggleStatus = async (moduleId, taskType) => {
-    const currentModule = modules.find(m => m.id === moduleId);
-    if(!currentModule) return;
-    const currentStatus = currentModule.tasks[taskType];
-    const newStatus = currentStatus === "completed" ? "pending" : "completed";
+  const updatePercentage = async (moduleId, taskType, newPercent) => {
+    let clampedVal = parseInt(newPercent, 10);
+    if (isNaN(clampedVal)) clampedVal = 0;
+    if (clampedVal < 0) clampedVal = 0;
+    if (clampedVal > 100) clampedVal = 100;
     
     // Optimistic Update
     setModules(prevModules => 
@@ -53,9 +55,8 @@ export default function Home() {
           return {
             ...mod,
             tasks: {
-              ...mod,
               ...mod.tasks,
-              [taskType]: newStatus
+              [taskType]: clampedVal
             }
           };
         }
@@ -68,7 +69,7 @@ export default function Home() {
        await fetch('/api/modules', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "update", id: moduleId, taskType, newStatus })
+        body: JSON.stringify({ action: "update", id: moduleId, taskType, newStatus: clampedVal })
       });
     } catch(err) {
       console.error(err);
@@ -86,11 +87,11 @@ export default function Home() {
           id: tempId,
           name: newModuleName.trim(),
           tasks: {
-            UI: "pending",
-            UX: "pending",
-            Backend: "pending",
-            Testing: "pending",
-            Deployment: "pending",
+            UI: 0,
+            UX: 0,
+            Backend: 0,
+            Testing: 0,
+            Deployment: 0,
           },
         },
       ]);
@@ -98,56 +99,35 @@ export default function Home() {
       setIsAddingModule(false);
       
       try {
-        const res = await fetch('/api/modules', {
+        await fetch('/api/modules', {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ action: "create", name: newModuleName.trim(), id: tempId })
         });
-        const data = await res.json();
-        // optionally replace tempId with data.id if Google Sheet creates a unique one
       } catch(err) {
         console.error(err);
       }
     }
   };
 
-  const getStatusClass = (status) => {
-    switch (status) {
-      case "completed":
-        return "bg-success-subtle text-success";
-      case "pending":
-      default:
-        return "bg-light text-secondary";
-    }
-  };
-
-  // Modern Checkbox look
-  const renderCheckbox = (status) => {
-    if (status === "completed") {
-      return (
-        <div className="d-flex align-items-center justify-content-center h-100">
-           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-success"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-        </div>
-      );
-    }
-    return (
-        <div className="d-flex align-items-center justify-content-center h-100">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-secondary"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>
-        </div>
-    );
+  const getColorClass = (val) => {
+    if (val === 100) return "bg-success text-white border-success";
+    if (val >= 50) return "bg-warning text-dark border-warning";
+    if (val > 0) return "bg-primary-subtle text-primary border-primary";
+    return "bg-light text-secondary border-secondary";
   };
 
   return (
-    <div className="min-vh-100 d-flex flex-column" style={{ backgroundColor: "#f4f7f6" }}>
-      <header className="py-3 px-4 d-flex justify-content-between align-items-center shadow-sm" style={{ background: "#ffffff" }}>
+    <div className="min-vh-100 d-flex flex-column" style={{ backgroundColor: "#f8f9fa" }}>
+      <header className="py-3 px-4 d-flex justify-content-between align-items-center shadow-sm sticky-top" style={{ background: "#ffffff", zIndex: 10 }}>
         <h4 className="m-0 fw-bold text-primary">📊 Individual Project Tracker</h4>
         <div className="d-flex align-items-center gap-3">
           <span className="text-secondary fw-semibold">Interactive Mode</span>
           <div className="d-flex align-items-center gap-2">
-            <span className="fw-bold">{overallProgress}%</span>
-            <div className="progress" style={{ width: "150px", height: "8px" }}>
+            <span className="fw-bold fs-5">{overallProgress}%</span>
+            <div className="progress rounded-pill shadow-sm" style={{ width: "160px", height: "12px" }}>
               <div
-                className="progress-bar bg-primary"
+                className="progress-bar bg-success"
                 role="progressbar"
                 style={{ width: `${overallProgress}%`, transition: "width 0.4s ease" }}
                 aria-valuenow={overallProgress}
@@ -162,111 +142,123 @@ export default function Home() {
       <main className="container my-5 flex-grow-1">
         <div className="d-flex justify-content-between align-items-center mb-4">
           <div>
-            <h2 className="fw-bold mb-1">Development Modules</h2>
-            <p className="text-muted mb-0">Click on any module phase checkbox to toggle its completion and update progress.</p>
+            <h3 className="fw-bold mb-1">Development Modules</h3>
+            <p className="text-muted mb-0">Enter the completion percentage (%) for each phase to update the tracker.</p>
           </div>
           <button 
             onClick={() => setIsAddingModule(!isAddingModule)}
-            className="btn btn-primary d-flex align-items-center gap-2 shadow-sm rounded-pill px-4"
+            className="btn btn-primary d-flex align-items-center gap-2 shadow rounded-pill px-4 py-2"
           >
-            <span className="fw-bold">{isAddingModule ? "-" : "+"}</span>
+            <span className="fw-bold fs-5">{isAddingModule ? "×" : "+"}</span>
             {isAddingModule ? "Cancel" : "New Module"}
           </button>
         </div>
 
-        <div className="card shadow-sm border-0 rounded-4 overflow-hidden">
-          <table className="table table-hover align-middle mb-0" style={{ backgroundColor: "white" }}>
-            <thead className="table-light">
-              <tr>
-                <th className="ps-4 py-3 fw-bold text-secondary">Module Name</th>
-                <th className="text-center py-3 fw-bold text-secondary">UI Design</th>
-                <th className="text-center py-3 fw-bold text-secondary">UX Design</th>
-                <th className="text-center py-3 fw-bold text-secondary">Backend</th>
-                <th className="text-center py-3 fw-bold text-secondary">Testing</th>
-                <th className="text-center py-3 fw-bold text-secondary">Deployment</th>
-                <th className="text-center py-3 fw-bold text-secondary">Progress</th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading && (
-                 <tr><td colSpan="7" className="text-center py-5 text-secondary">Loading Tracker Data from Google Sheets...</td></tr>
-              )}
-              {!isLoading && modules.map((mod) => {
-                const total = Object.values(mod.tasks).length;
-                const done = Object.values(mod.tasks).filter(
-                  (s) => s === "completed"
-                ).length;
-                const modProgress = Math.round((done / total) * 100);
+        <div className="card shadow border-0 rounded-4 overflow-hidden">
+          <div className="table-responsive">
+            <table className="table table-hover align-middle mb-0" style={{ backgroundColor: "white" }}>
+              <thead className="table-light">
+                <tr>
+                  <th className="ps-4 py-3 fw-bold text-secondary text-uppercase fs-7">Module Name</th>
+                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "120px"}}>UI Design</th>
+                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "120px"}}>UX Design</th>
+                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "120px"}}>Backend</th>
+                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "120px"}}>Testing</th>
+                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "120px"}}>Deployment</th>
+                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "150px"}}>Progress</th>
+                </tr>
+              </thead>
+              <tbody>
+                {isLoading && (
+                  <tr><td colSpan="7" className="text-center py-5 text-secondary fw-semibold">
+                    <div className="spinner-border spinner-border-sm me-2 text-primary" role="status"></div>
+                    Loading Tracker Data from Google Sheets...
+                  </td></tr>
+                )}
+                {!isLoading && modules.map((mod) => {
+                  let moduleSum = 0;
+                  Object.values(mod.tasks).forEach((v) => moduleSum += (Number(v) || 0));
+                  const modProgress = Math.round(moduleSum / 5);
 
-                return (
-                  <tr key={mod.id}>
-                    <td className="ps-4 fw-medium py-3 border-bottom fs-5 text-dark">
-                      {mod.name}
-                    </td>
-                    {["UI", "UX", "Backend", "Testing", "Deployment"].map((taskType) => {
-                      const status = mod.tasks[taskType];
-                      return (
-                        <td
-                          key={taskType}
-                          onClick={() => toggleStatus(mod.id, taskType)}
-                          className={`border-bottom p-0`}
-                          style={{ cursor: "pointer", width: "100px", transition: "all 0.2s" }}
-                          title={`Click to mark ${taskType} as ${status === "completed" ? "pending" : "completed"}`}
-                        >
-                          <div className={`w-100 h-100 p-3 ${getStatusClass(status)}`} style={{ transition: "background-color 0.3s" }}>
-                            {renderCheckbox(status)}
+                  return (
+                    <tr key={mod.id}>
+                      <td className="ps-4 fw-bold py-3 border-bottom fs-5 text-dark">
+                        {mod.name}
+                      </td>
+                      {["UI", "UX", "Backend", "Testing", "Deployment"].map((taskType) => {
+                        const val = parseInt(mod.tasks[taskType]) || 0;
+                        return (
+                          <td
+                            key={taskType}
+                            className={`border-bottom p-2 text-center align-middle`}
+                          >
+                            <div className="d-flex align-items-center justify-content-center">
+                              <div className={`input-group input-group-sm rounded-pill shadow-sm overflow-hidden ${getColorClass(val)}`} style={{ maxWidth: '85px', border: '1px solid' }}>
+                                <input
+                                  type="number"
+                                  className="form-control text-center fw-bold border-0 bg-transparent text-inherit"
+                                  min="0"
+                                  max="100"
+                                  value={val}
+                                  onChange={(e) => updatePercentage(mod.id, taskType, e.target.value)}
+                                  onBlur={(e) => updatePercentage(mod.id, taskType, e.target.value)}
+                                  style={{ color: 'inherit', boxShadow: 'none' }}
+                                />
+                                <span className="input-group-text bg-transparent border-0 fw-bold px-2" style={{ color: 'inherit' }}>%</span>
+                              </div>
+                            </div>
+                          </td>
+                        );
+                      })}
+                      <td className="text-center fw-bold border-bottom px-3">
+                        <div className="d-flex flex-column align-items-center gap-1">
+                          <span className={modProgress === 100 ? "text-success fw-bold fs-5" : "text-dark fw-bold fs-5"}>{modProgress}%</span>
+                          <div className="progress w-100 bg-light rounded-pill" style={{ height: "6px" }}>
+                            <div
+                              className={`progress-bar rounded-pill ${modProgress === 100 ? "bg-success" : "bg-primary"}`}
+                              role="progressbar"
+                              style={{ width: `${modProgress}%`, transition: "width 0.4s ease" }}
+                              aria-valuenow={modProgress}
+                              aria-valuemin="0"
+                              aria-valuemax="100"
+                            ></div>
                           </div>
-                        </td>
-                      );
-                    })}
-                    <td className="text-center fw-bold border-bottom" style={{ width: "120px" }}>
-                      <div className="d-flex flex-column align-items-center gap-1">
-                        <span className={modProgress === 100 ? "text-success fw-bold" : "text-muted fw-bold"}>{modProgress}%</span>
-                        <div className="progress w-100 bg-light" style={{ height: "6px" }}>
-                          <div
-                            className={`progress-bar ${modProgress === 100 ? "bg-success" : "bg-primary"}`}
-                            role="progressbar"
-                            style={{ width: `${modProgress}%`, transition: "width 0.4s ease, background-color 0.4s ease" }}
-                            aria-valuenow={modProgress}
-                            aria-valuemin="0"
-                            aria-valuemax="100"
-                          ></div>
                         </div>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-              {isAddingModule && (
-                  <tr style={{ backgroundColor: "#fdfdfd" }}>
-                    <td className="ps-4 fw-medium py-3 border-bottom border-top">
-                      <input 
-                        type="text" 
-                        className="form-control shadow-none border-1" 
-                        placeholder="Enter module name..." 
-                        value={newModuleName}
-                        onChange={(e) => setNewModuleName(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleAddModule()}
-                        autoFocus
-                      />
-                    </td>
-                    <td colSpan="5" className="border-bottom border-top text-center">
-                      <span className="text-secondary opacity-75 fst-italic">Tasks will initialize as pending...</span>
-                    </td>
-                    <td className="text-center py-3 border-bottom border-top">
-                      <div className="d-flex gap-2 justify-content-center">
-                        <button className="btn btn-success btn-sm fw-bold px-3 rounded-pill shadow-sm" onClick={handleAddModule}>Save</button>
-                      </div>
-                    </td>
-                  </tr>
-              )}
-            </tbody>
-          </table>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {isAddingModule && (
+                    <tr style={{ backgroundColor: "#fdfdfd" }}>
+                      <td className="ps-4 fw-medium py-3 border-bottom border-top">
+                        <input 
+                          type="text" 
+                          className="form-control shadow-sm border-1 rounded-pill" 
+                          placeholder="Enter module name..." 
+                          value={newModuleName}
+                          onChange={(e) => setNewModuleName(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && handleAddModule()}
+                          autoFocus
+                        />
+                      </td>
+                      <td colSpan="5" className="border-bottom border-top text-center align-middle">
+                        <span className="text-secondary opacity-75 fst-italic">Tasks will initialize at 0%...</span>
+                      </td>
+                      <td className="text-center py-3 border-bottom border-top align-middle">
+                        <div className="d-flex gap-2 justify-content-center">
+                          <button className="btn btn-success btn-sm fw-bold px-4 rounded-pill shadow-sm" onClick={handleAddModule}>Save</button>
+                        </div>
+                      </td>
+                    </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </main>
 
       <footer className="py-4 text-center text-muted fs-6 mt-auto">
-        Individual Project Tracker • Interactive Checklist
+        Individual Project Tracker • Google Sheets Integration API
       </footer>
     </div>
   );
