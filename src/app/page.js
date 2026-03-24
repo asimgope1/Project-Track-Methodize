@@ -5,52 +5,21 @@ import React, { useState, useEffect } from "react";
 export default function Home() {
   const [isAddingModule, setIsAddingModule] = useState(false);
   const [newModuleName, setNewModuleName] = useState("");
-  const [modules, setModules] = useState([
-    {
-      id: "m1",
-      name: "Authentication & Authorization",
-      tasks: {
-        UI: "completed",
-        UX: "completed",
-        Backend: "completed",
-        Testing: "pending",
-        Deployment: "pending",
-      },
-    },
-    {
-      id: "m2",
-      name: "User Dashboard",
-      tasks: {
-        UI: "completed",
-        UX: "completed",
-        Backend: "pending",
-        Testing: "pending",
-        Deployment: "pending",
-      },
-    },
-    {
-      id: "m3",
-      name: "Billing & Subscriptions",
-      tasks: {
-        UI: "pending",
-        UX: "pending",
-        Backend: "pending",
-        Testing: "pending",
-        Deployment: "pending",
-      },
-    },
-    {
-      id: "m4",
-      name: "Settings & Profile",
-      tasks: {
-        UI: "pending",
-        UX: "pending",
-        Backend: "pending",
-        Testing: "pending",
-        Deployment: "pending",
-      },
-    }
-  ]);
+  const [modules, setModules] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/modules')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) setModules(data);
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        console.error("Failed to load modules from Google Sheets API", err);
+        setIsLoading(false);
+      });
+  }, []);
 
   const [overallProgress, setOverallProgress] = useState(0);
 
@@ -71,16 +40,20 @@ export default function Home() {
     }
   }, [modules]);
 
-  const toggleStatus = (moduleId, taskType) => {
+  const toggleStatus = async (moduleId, taskType) => {
+    const currentModule = modules.find(m => m.id === moduleId);
+    if(!currentModule) return;
+    const currentStatus = currentModule.tasks[taskType];
+    const newStatus = currentStatus === "completed" ? "pending" : "completed";
+    
+    // Optimistic Update
     setModules(prevModules => 
       prevModules.map(mod => {
         if (mod.id === moduleId) {
-          const currentStatus = mod.tasks[taskType];
-          // Toggle between completed and pending
-          const newStatus = currentStatus === "completed" ? "pending" : "completed";
           return {
             ...mod,
             tasks: {
+              ...mod,
               ...mod.tasks,
               [taskType]: newStatus
             }
@@ -89,14 +62,28 @@ export default function Home() {
         return mod;
       })
     );
+
+    // Persist to Google Sheets Backend
+    try {
+       await fetch('/api/modules', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "update", id: moduleId, taskType, newStatus })
+      });
+    } catch(err) {
+      console.error(err);
+    }
   };
 
-  const handleAddModule = () => {
+  const handleAddModule = async () => {
     if (newModuleName.trim()) {
+      const tempId = `m${Date.now()}`;
+      
+      // Optimistic 
       setModules([
         ...modules,
         {
-          id: `m${Date.now()}`,
+          id: tempId,
           name: newModuleName.trim(),
           tasks: {
             UI: "pending",
@@ -109,6 +96,18 @@ export default function Home() {
       ]);
       setNewModuleName("");
       setIsAddingModule(false);
+      
+      try {
+        const res = await fetch('/api/modules', {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "create", name: newModuleName.trim(), id: tempId })
+        });
+        const data = await res.json();
+        // optionally replace tempId with data.id if Google Sheet creates a unique one
+      } catch(err) {
+        console.error(err);
+      }
     }
   };
 
@@ -189,7 +188,10 @@ export default function Home() {
               </tr>
             </thead>
             <tbody>
-              {modules.map((mod) => {
+              {isLoading && (
+                 <tr><td colSpan="7" className="text-center py-5 text-secondary">Loading Tracker Data from Google Sheets...</td></tr>
+              )}
+              {!isLoading && modules.map((mod) => {
                 const total = Object.values(mod.tasks).length;
                 const done = Object.values(mod.tasks).filter(
                   (s) => s === "completed"
