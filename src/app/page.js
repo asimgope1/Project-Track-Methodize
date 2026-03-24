@@ -43,20 +43,25 @@ export default function Home() {
   }, [modules]);
 
   const updatePercentage = async (moduleId, taskType, newPercent) => {
-    let clampedVal = parseInt(newPercent, 10);
-    if (isNaN(clampedVal)) clampedVal = 0;
-    if (clampedVal < 0) clampedVal = 0;
-    if (clampedVal > 100) clampedVal = 100;
+    let clampedVal = newPercent === "" ? "" : parseInt(newPercent, 10);
+    
+    if (clampedVal !== "") {
+      if (isNaN(clampedVal)) clampedVal = 0;
+      if (clampedVal < 0) clampedVal = 0;
+      if (clampedVal > 100) clampedVal = 100;
+    }
 
     setModules(prevModules =>
       prevModules.map(mod => mod.id === moduleId ? { ...mod, tasks: { ...mod.tasks, [taskType]: clampedVal } } : mod)
     );
 
+    const apiValue = clampedVal === "" ? 0 : clampedVal;
+
     try {
       await fetch('/api/modules', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "update", id: moduleId, taskType, newStatus: clampedVal })
+        body: JSON.stringify({ action: "update", id: moduleId, taskType, newStatus: apiValue })
       });
     } catch (err) { console.error(err); }
   };
@@ -67,12 +72,12 @@ export default function Home() {
     );
 
     try {
-       await fetch('/api/modules', {
+      await fetch('/api/modules', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "updateField", id: moduleId, field: field, newValue: newValue })
       });
-    } catch(err) { console.error(err); }
+    } catch (err) { console.error(err); }
   };
 
   const handleDeleteModule = async (moduleId) => {
@@ -81,12 +86,12 @@ export default function Home() {
     setModules(prev => prev.filter(mod => mod.id !== moduleId));
 
     try {
-       await fetch('/api/modules', {
+      await fetch('/api/modules', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "delete", id: moduleId })
       });
-    } catch(err) { console.error(err); }
+    } catch (err) { console.error(err); }
   };
 
   const handleAddModule = async () => {
@@ -268,7 +273,7 @@ export default function Home() {
                       <td className="text-center border-bottom p-2 align-middle">
                         <button
                           className="btn btn-sm btn-outline-danger border-0 rounded-circle fw-bold fs-5 d-flex align-items-center justify-content-center"
-                          style={{width:"32px", height:"32px"}}
+                          style={{ width: "32px", height: "32px" }}
                           onClick={() => handleDeleteModule(mod.id)}
                           title="Delete Module"
                         >
@@ -291,16 +296,16 @@ export default function Home() {
                         autoFocus
                       />
                     </td>
-                      <td colSpan="8" className="border-bottom border-top text-center align-middle">
-                        <span className="text-secondary opacity-75 fst-italic">Tasks will initialize at 0%...</span>
-                      </td>
-                      <td className="text-center py-3 border-bottom border-top align-middle">
-                        <div className="d-flex gap-2 justify-content-center">
-                          <button className="btn btn-success btn-sm fw-bold px-4 rounded-pill shadow-sm" onClick={handleAddModule}>Save</button>
-                        </div>
-                      </td>
-                      <td colSpan="2" className="border-bottom border-top bg-light"></td>
-                    </tr>
+                    <td colSpan="8" className="border-bottom border-top text-center align-middle">
+                      <span className="text-secondary opacity-75 fst-italic">Tasks will initialize at 0%...</span>
+                    </td>
+                    <td className="text-center py-3 border-bottom border-top align-middle">
+                      <div className="d-flex gap-2 justify-content-center">
+                        <button className="btn btn-success btn-sm fw-bold px-4 rounded-pill shadow-sm" onClick={handleAddModule}>Save</button>
+                      </div>
+                    </td>
+                    <td colSpan="2" className="border-bottom border-top bg-light"></td>
+                  </tr>
                 )}
               </tbody>
             </table>
@@ -309,7 +314,7 @@ export default function Home() {
       </main>
 
       <footer className="py-4 text-center text-muted fs-6 mt-auto">
-        Individual Project Tracker • Google Sheets Integration API
+        Methodize Project Tracker • Google Sheets Integration API
       </footer>
     </div>
   );
