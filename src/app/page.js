@@ -184,7 +184,7 @@ export default function Home() {
                   <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "110px" }}>Testing</th>
                   <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "110px" }}>Deployment</th>
                   <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "100px" }}>Progress</th>
-                  <th className="ps-3 py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "150px" }}>Remarks</th>
+                  <th className="ps-3 py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "250px", minWidth: "200px" }}>Remarks</th>
                   <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "50px" }}></th>
                 </tr>
               </thead>
@@ -265,14 +265,15 @@ export default function Home() {
                         </div>
                       </td>
                       <td className="border-bottom p-2 align-middle">
-                        <input
-                          type="text"
-                          className="form-control form-control-sm border-0 bg-light shadow-sm rounded-pill px-3 fst-italic text-truncate"
-                          placeholder="Add remark..."
+                        <textarea
+                          className="form-control form-control-sm border-0 bg-light shadow-sm rounded-3 px-3 py-2 fst-italic"
+                          style={{ resize: "vertical", minHeight: "38px", fontSize: "0.875rem" }}
+                          rows={2}
+                          placeholder="Type detailed remarks here..."
                           value={mod.remarks || ""}
                           onChange={(e) => updateField(mod.id, 'remarks', e.target.value)}
                           onBlur={(e) => updateField(mod.id, 'remarks', e.target.value)}
-                          title={mod.remarks || "Add remark..."}
+                          title={mod.remarks || "Remarks"}
                         />
                       </td>
                       <td className="text-center border-bottom p-2 align-middle">
