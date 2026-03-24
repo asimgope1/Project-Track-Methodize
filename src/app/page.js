@@ -175,9 +175,9 @@ export default function Home() {
             <table className="table table-hover align-middle mb-0" style={{ backgroundColor: "white" }}>
               <thead className="table-light">
                 <tr>
-                  <th className="ps-4 py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "220px" }}>Module Name</th>
-                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "150px" }}>Process</th>
-                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "150px" }}>Stage</th>
+                  <th className="ps-4 py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "250px" }}>Module Name</th>
+                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "200px" }}>Process</th>
+                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "200px" }}>Stage</th>
                   <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "135px" }}>UI Design</th>
                   <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "135px" }}>UX Design</th>
                   <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "135px" }}>Backend</th>
@@ -203,19 +203,21 @@ export default function Home() {
                   return (
                     <tr key={mod.id} className="align-middle">
                       <td className="ps-3 fw-bold py-2 border-bottom text-dark">
-                        <input
-                          type="text"
+                        <textarea
                           className="form-control border-0 bg-transparent fw-bold fs-6 text-dark px-2 shadow-none"
+                          style={{ resize: "vertical", minHeight: "38px" }}
+                          rows={1}
                           value={mod.name || ""}
                           onChange={(e) => updateField(mod.id, 'name', e.target.value)}
                           onBlur={(e) => updateField(mod.id, 'name', e.target.value)}
-                          title={mod.name || "Click to rename module"}
+                          title={mod.name || "Module Name"}
                         />
                       </td>
                       <td className="border-bottom p-2 align-middle">
-                        <input
-                          type="text"
-                          className="form-control form-control-sm border-0 bg-light shadow-sm rounded-pill px-3 text-center"
+                        <textarea
+                          className="form-control form-control-sm border-0 bg-light shadow-sm rounded-3 px-3 py-1 text-center"
+                          style={{ resize: "vertical", minHeight: "38px", fontSize: "0.875rem" }}
+                          rows={1}
                           placeholder="Process..."
                           value={mod.process || ""}
                           onChange={(e) => updateField(mod.id, 'process', e.target.value)}
@@ -224,9 +226,10 @@ export default function Home() {
                         />
                       </td>
                       <td className="border-bottom p-2 align-middle">
-                        <input
-                          type="text"
-                          className="form-control form-control-sm border-0 bg-light shadow-sm rounded-pill px-3 text-center"
+                        <textarea
+                          className="form-control form-control-sm border-0 bg-light shadow-sm rounded-3 px-3 py-1 text-center"
+                          style={{ resize: "vertical", minHeight: "38px", fontSize: "0.875rem" }}
+                          rows={1}
                           placeholder="Stage..."
                           value={mod.stage || ""}
                           onChange={(e) => updateField(mod.id, 'stage', e.target.value)}
