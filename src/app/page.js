@@ -48,32 +48,31 @@ export default function Home() {
     if (clampedVal < 0) clampedVal = 0;
     if (clampedVal > 100) clampedVal = 100;
     
-    // Optimistic Update
     setModules(prevModules => 
-      prevModules.map(mod => {
-        if (mod.id === moduleId) {
-          return {
-            ...mod,
-            tasks: {
-              ...mod.tasks,
-              [taskType]: clampedVal
-            }
-          };
-        }
-        return mod;
-      })
+      prevModules.map(mod => mod.id === moduleId ? { ...mod, tasks: { ...mod.tasks, [taskType]: clampedVal } } : mod)
     );
 
-    // Persist to Google Sheets Backend
     try {
        await fetch('/api/modules', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "update", id: moduleId, taskType, newStatus: clampedVal })
       });
-    } catch(err) {
-      console.error(err);
-    }
+    } catch(err) { console.error(err); }
+  };
+
+  const updateField = async (moduleId, field, newValue) => {
+    setModules(prevModules => 
+      prevModules.map(mod => mod.id === moduleId ? { ...mod, [field]: newValue } : mod)
+    );
+
+    try {
+       await fetch('/api/modules', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "updateField", id: moduleId, field: field, newValue: newValue })
+      });
+    } catch(err) { console.error(err); }
   };
 
   const handleAddModule = async () => {
@@ -86,13 +85,9 @@ export default function Home() {
         {
           id: tempId,
           name: newModuleName.trim(),
-          tasks: {
-            UI: 0,
-            UX: 0,
-            Backend: 0,
-            Testing: 0,
-            Deployment: 0,
-          },
+          stage: "Planning",
+          remarks: "",
+          tasks: { UI: 0, UX: 0, Backend: 0, Testing: 0, Deployment: 0 },
         },
       ]);
       setNewModuleName("");
@@ -159,13 +154,15 @@ export default function Home() {
             <table className="table table-hover align-middle mb-0" style={{ backgroundColor: "white" }}>
               <thead className="table-light">
                 <tr>
-                  <th className="ps-4 py-3 fw-bold text-secondary text-uppercase fs-7">Module Name</th>
-                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "120px"}}>UI Design</th>
-                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "120px"}}>UX Design</th>
-                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "120px"}}>Backend</th>
-                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "120px"}}>Testing</th>
-                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "120px"}}>Deployment</th>
-                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "150px"}}>Progress</th>
+                  <th className="ps-4 py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "180px"}}>Module Name</th>
+                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "125px"}}>Process Stage</th>
+                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "115px"}}>UI Design</th>
+                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "115px"}}>UX Design</th>
+                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "115px"}}>Backend</th>
+                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "115px"}}>Testing</th>
+                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "115px"}}>Deployment</th>
+                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "100px"}}>Progress</th>
+                  <th className="ps-3 py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "160px"}}>Remarks</th>
                 </tr>
               </thead>
               <tbody>
@@ -182,48 +179,61 @@ export default function Home() {
 
                   return (
                     <tr key={mod.id}>
-                      <td className="ps-4 fw-bold py-3 border-bottom fs-5 text-dark">
+                      <td className="ps-4 fw-bold py-3 border-bottom fs-6 text-dark align-middle">
                         {mod.name}
+                      </td>
+                      <td className="text-center border-bottom p-2 align-middle">
+                        <select 
+                          className="form-select form-select-sm shadow-sm rounded-pill fw-medium border-0 text-center"
+                          style={{ backgroundColor: mod.stage === "Live" ? "#d1e7dd" : mod.stage === "Testing" ? "#cfe2ff" : "#f8f9fa", cursor: "pointer" }}
+                          value={mod.stage || "Planning"}
+                          onChange={(e) => updateField(mod.id, 'stage', e.target.value)}
+                        >
+                          <option value="Planning">Planning</option>
+                          <option value="Development">Development</option>
+                          <option value="Testing">Testing</option>
+                          <option value="Review">Review</option>
+                          <option value="Live">Live</option>
+                        </select>
                       </td>
                       {["UI", "UX", "Backend", "Testing", "Deployment"].map((taskType) => {
                         const val = parseInt(mod.tasks[taskType]) || 0;
                         return (
-                          <td
-                            key={taskType}
-                            className={`border-bottom p-2 text-center align-middle`}
-                          >
+                          <td key={taskType} className={`border-bottom p-2 text-center align-middle`}>
                             <div className="d-flex align-items-center justify-content-center">
                               <div className={`input-group input-group-sm rounded-pill shadow-sm overflow-hidden ${getColorClass(val)}`} style={{ maxWidth: '85px', border: '1px solid' }}>
                                 <input
                                   type="number"
                                   className="form-control text-center fw-bold border-0 bg-transparent text-inherit"
-                                  min="0"
-                                  max="100"
+                                  style={{ color: 'inherit', boxShadow: 'none', paddingLeft: '10px' }}
+                                  min="0" max="100"
                                   value={val}
                                   onChange={(e) => updatePercentage(mod.id, taskType, e.target.value)}
                                   onBlur={(e) => updatePercentage(mod.id, taskType, e.target.value)}
-                                  style={{ color: 'inherit', boxShadow: 'none' }}
                                 />
-                                <span className="input-group-text bg-transparent border-0 fw-bold px-2" style={{ color: 'inherit' }}>%</span>
+                                <span className="input-group-text bg-transparent border-0 py-0 px-2 fw-bold" style={{ color: 'inherit' }}>%</span>
                               </div>
                             </div>
                           </td>
                         );
                       })}
-                      <td className="text-center fw-bold border-bottom px-3">
+                      <td className="text-center fw-bold border-bottom px-2 align-middle">
                         <div className="d-flex flex-column align-items-center gap-1">
-                          <span className={modProgress === 100 ? "text-success fw-bold fs-5" : "text-dark fw-bold fs-5"}>{modProgress}%</span>
-                          <div className="progress w-100 bg-light rounded-pill" style={{ height: "6px" }}>
-                            <div
-                              className={`progress-bar rounded-pill ${modProgress === 100 ? "bg-success" : "bg-primary"}`}
-                              role="progressbar"
-                              style={{ width: `${modProgress}%`, transition: "width 0.4s ease" }}
-                              aria-valuenow={modProgress}
-                              aria-valuemin="0"
-                              aria-valuemax="100"
-                            ></div>
+                          <span className={modProgress === 100 ? "text-success fw-bold flex-shrink-0" : "text-dark fw-bold flex-shrink-0"} style={{fontSize: "0.95rem"}}>{modProgress}%</span>
+                          <div className="progress w-100 bg-light rounded-pill" style={{ height: "4px" }}>
+                            <div className={`progress-bar rounded-pill ${modProgress === 100 ? "bg-success" : "bg-primary"}`} style={{ width: `${modProgress}%`, transition: "width 0.4s ease" }}></div>
                           </div>
                         </div>
+                      </td>
+                      <td className="border-bottom p-2 align-middle">
+                        <input
+                          type="text"
+                          className="form-control form-control-sm border-0 bg-light shadow-sm rounded-pill px-3 fst-italic"
+                          placeholder="Add remark..."
+                          value={mod.remarks || ""}
+                          onChange={(e) => updateField(mod.id, 'remarks', e.target.value)}
+                          onBlur={(e) => updateField(mod.id, 'remarks', e.target.value)}
+                        />
                       </td>
                     </tr>
                   );
@@ -241,14 +251,15 @@ export default function Home() {
                           autoFocus
                         />
                       </td>
-                      <td colSpan="5" className="border-bottom border-top text-center align-middle">
-                        <span className="text-secondary opacity-75 fst-italic">Tasks will initialize at 0%...</span>
+                      <td colSpan="7" className="border-bottom border-top text-center align-middle">
+                        <span className="text-secondary opacity-75 fst-italic">Stage defaults to Planning. Tasks will initialize at 0%...</span>
                       </td>
                       <td className="text-center py-3 border-bottom border-top align-middle">
                         <div className="d-flex gap-2 justify-content-center">
                           <button className="btn btn-success btn-sm fw-bold px-4 rounded-pill shadow-sm" onClick={handleAddModule}>Save</button>
                         </div>
                       </td>
+                      <td className="border-bottom border-top bg-light"></td>
                     </tr>
                 )}
               </tbody>
