@@ -47,22 +47,22 @@ export default function Home() {
     if (isNaN(clampedVal)) clampedVal = 0;
     if (clampedVal < 0) clampedVal = 0;
     if (clampedVal > 100) clampedVal = 100;
-    
-    setModules(prevModules => 
+
+    setModules(prevModules =>
       prevModules.map(mod => mod.id === moduleId ? { ...mod, tasks: { ...mod.tasks, [taskType]: clampedVal } } : mod)
     );
 
     try {
-       await fetch('/api/modules', {
+      await fetch('/api/modules', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "update", id: moduleId, taskType, newStatus: clampedVal })
       });
-    } catch(err) { console.error(err); }
+    } catch (err) { console.error(err); }
   };
 
   const updateField = async (moduleId, field, newValue) => {
-    setModules(prevModules => 
+    setModules(prevModules =>
       prevModules.map(mod => mod.id === moduleId ? { ...mod, [field]: newValue } : mod)
     );
 
@@ -75,11 +75,25 @@ export default function Home() {
     } catch(err) { console.error(err); }
   };
 
+  const handleDeleteModule = async (moduleId) => {
+    if (!window.confirm("Are you sure you want to permanently delete this module?")) return;
+
+    setModules(prev => prev.filter(mod => mod.id !== moduleId));
+
+    try {
+       await fetch('/api/modules', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "delete", id: moduleId })
+      });
+    } catch(err) { console.error(err); }
+  };
+
   const handleAddModule = async () => {
     if (newModuleName.trim()) {
       const tempId = `m${Date.now()}`;
-      
-      // Optimistic 
+
+      // Optimistic
       setModules([
         ...modules,
         {
@@ -93,14 +107,14 @@ export default function Home() {
       ]);
       setNewModuleName("");
       setIsAddingModule(false);
-      
+
       try {
         await fetch('/api/modules', {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ action: "create", name: newModuleName.trim(), id: tempId })
         });
-      } catch(err) {
+      } catch (err) {
         console.error(err);
       }
     }
@@ -116,7 +130,7 @@ export default function Home() {
   return (
     <div className="min-vh-100 d-flex flex-column" style={{ backgroundColor: "#f8f9fa" }}>
       <header className="py-3 px-4 d-flex justify-content-between align-items-center shadow-sm sticky-top" style={{ background: "#ffffff", zIndex: 10 }}>
-        <h4 className="m-0 fw-bold text-primary">📊 Individual Project Tracker</h4>
+        <h4 className="m-0 fw-bold text-primary">📊 Methodize Project Tracker</h4>
         <div className="d-flex align-items-center gap-3">
           <span className="text-secondary fw-semibold">Interactive Mode</span>
           <div className="d-flex align-items-center gap-2">
@@ -141,7 +155,7 @@ export default function Home() {
             <h3 className="fw-bold mb-1">Development Modules</h3>
             <p className="text-muted mb-0">Enter the completion percentage (%) for each phase to update the tracker.</p>
           </div>
-          <button 
+          <button
             onClick={() => setIsAddingModule(!isAddingModule)}
             className="btn btn-primary d-flex align-items-center gap-2 shadow rounded-pill px-4 py-2"
           >
@@ -155,21 +169,22 @@ export default function Home() {
             <table className="table table-hover align-middle mb-0" style={{ backgroundColor: "white" }}>
               <thead className="table-light">
                 <tr>
-                  <th className="ps-4 py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "170px"}}>Module Name</th>
-                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "120px"}}>Process</th>
-                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "120px"}}>Stage</th>
-                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "115px"}}>UI Design</th>
-                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "115px"}}>UX Design</th>
-                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "115px"}}>Backend</th>
-                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "115px"}}>Testing</th>
-                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "115px"}}>Deployment</th>
-                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "100px"}}>Progress</th>
-                  <th className="ps-3 py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "150px"}}>Remarks</th>
+                  <th className="ps-4 py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "170px" }}>Module Name</th>
+                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "120px" }}>Process</th>
+                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "120px" }}>Stage</th>
+                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "110px" }}>UI Design</th>
+                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "110px" }}>UX Design</th>
+                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "110px" }}>Backend</th>
+                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "110px" }}>Testing</th>
+                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "110px" }}>Deployment</th>
+                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "100px" }}>Progress</th>
+                  <th className="ps-3 py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "150px" }}>Remarks</th>
+                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "50px" }}></th>
                 </tr>
               </thead>
               <tbody>
                 {isLoading && (
-                  <tr><td colSpan="7" className="text-center py-5 text-secondary fw-semibold">
+                  <tr><td colSpan="11" className="text-center py-5 text-secondary fw-semibold">
                     <div className="spinner-border spinner-border-sm me-2 text-primary" role="status"></div>
                     Loading Tracker Data from Google Sheets...
                   </td></tr>
@@ -180,9 +195,16 @@ export default function Home() {
                   const modProgress = Math.round(moduleSum / 5);
 
                   return (
-                    <tr key={mod.id}>
-                      <td className="ps-4 fw-bold py-3 border-bottom fs-6 text-dark align-middle">
-                        {mod.name}
+                    <tr key={mod.id} className="align-middle">
+                      <td className="ps-3 fw-bold py-2 border-bottom text-dark">
+                        <input
+                          type="text"
+                          className="form-control border-0 bg-transparent fw-bold fs-6 text-dark px-2 shadow-none"
+                          value={mod.name || ""}
+                          onChange={(e) => updateField(mod.id, 'name', e.target.value)}
+                          onBlur={(e) => updateField(mod.id, 'name', e.target.value)}
+                          title="Click to rename module"
+                        />
                       </td>
                       <td className="border-bottom p-2 align-middle">
                         <input
@@ -227,7 +249,7 @@ export default function Home() {
                       })}
                       <td className="text-center fw-bold border-bottom px-2 align-middle">
                         <div className="d-flex flex-column align-items-center gap-1">
-                          <span className={modProgress === 100 ? "text-success fw-bold flex-shrink-0" : "text-dark fw-bold flex-shrink-0"} style={{fontSize: "0.95rem"}}>{modProgress}%</span>
+                          <span className={modProgress === 100 ? "text-success fw-bold flex-shrink-0" : "text-dark fw-bold flex-shrink-0"} style={{ fontSize: "0.95rem" }}>{modProgress}%</span>
                           <div className="progress w-100 bg-light rounded-pill" style={{ height: "4px" }}>
                             <div className={`progress-bar rounded-pill ${modProgress === 100 ? "bg-success" : "bg-primary"}`} style={{ width: `${modProgress}%`, transition: "width 0.4s ease" }}></div>
                           </div>
@@ -243,22 +265,32 @@ export default function Home() {
                           onBlur={(e) => updateField(mod.id, 'remarks', e.target.value)}
                         />
                       </td>
+                      <td className="text-center border-bottom p-2 align-middle">
+                        <button
+                          className="btn btn-sm btn-outline-danger border-0 rounded-circle fw-bold fs-5 d-flex align-items-center justify-content-center"
+                          style={{width:"32px", height:"32px"}}
+                          onClick={() => handleDeleteModule(mod.id)}
+                          title="Delete Module"
+                        >
+                          ×
+                        </button>
+                      </td>
                     </tr>
                   );
                 })}
                 {isAddingModule && (
-                    <tr style={{ backgroundColor: "#fdfdfd" }}>
-                      <td className="ps-4 fw-medium py-3 border-bottom border-top">
-                        <input 
-                          type="text" 
-                          className="form-control shadow-sm border-1 rounded-pill" 
-                          placeholder="Enter module name..." 
-                          value={newModuleName}
-                          onChange={(e) => setNewModuleName(e.target.value)}
-                          onKeyDown={(e) => e.key === 'Enter' && handleAddModule()}
-                          autoFocus
-                        />
-                      </td>
+                  <tr style={{ backgroundColor: "#fdfdfd" }}>
+                    <td className="ps-4 fw-medium py-3 border-bottom border-top">
+                      <input
+                        type="text"
+                        className="form-control shadow-sm border-1 rounded-pill"
+                        placeholder="Enter module name..."
+                        value={newModuleName}
+                        onChange={(e) => setNewModuleName(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleAddModule()}
+                        autoFocus
+                      />
+                    </td>
                       <td colSpan="8" className="border-bottom border-top text-center align-middle">
                         <span className="text-secondary opacity-75 fst-italic">Tasks will initialize at 0%...</span>
                       </td>
@@ -267,7 +299,7 @@ export default function Home() {
                           <button className="btn btn-success btn-sm fw-bold px-4 rounded-pill shadow-sm" onClick={handleAddModule}>Save</button>
                         </div>
                       </td>
-                      <td className="border-bottom border-top bg-light"></td>
+                      <td colSpan="2" className="border-bottom border-top bg-light"></td>
                     </tr>
                 )}
               </tbody>
