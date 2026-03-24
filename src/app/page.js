@@ -85,7 +85,8 @@ export default function Home() {
         {
           id: tempId,
           name: newModuleName.trim(),
-          stage: "Planning",
+          process: "",
+          stage: "",
           remarks: "",
           tasks: { UI: 0, UX: 0, Backend: 0, Testing: 0, Deployment: 0 },
         },
@@ -154,15 +155,16 @@ export default function Home() {
             <table className="table table-hover align-middle mb-0" style={{ backgroundColor: "white" }}>
               <thead className="table-light">
                 <tr>
-                  <th className="ps-4 py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "180px"}}>Module Name</th>
-                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "125px"}}>Process Stage</th>
+                  <th className="ps-4 py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "170px"}}>Module Name</th>
+                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "120px"}}>Process</th>
+                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "120px"}}>Stage</th>
                   <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "115px"}}>UI Design</th>
                   <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "115px"}}>UX Design</th>
                   <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "115px"}}>Backend</th>
                   <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "115px"}}>Testing</th>
                   <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "115px"}}>Deployment</th>
                   <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "100px"}}>Progress</th>
-                  <th className="ps-3 py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "160px"}}>Remarks</th>
+                  <th className="ps-3 py-3 fw-bold text-secondary text-uppercase fs-7" style={{width: "150px"}}>Remarks</th>
                 </tr>
               </thead>
               <tbody>
@@ -182,19 +184,25 @@ export default function Home() {
                       <td className="ps-4 fw-bold py-3 border-bottom fs-6 text-dark align-middle">
                         {mod.name}
                       </td>
-                      <td className="text-center border-bottom p-2 align-middle">
-                        <select 
-                          className="form-select form-select-sm shadow-sm rounded-pill fw-medium border-0 text-center"
-                          style={{ backgroundColor: mod.stage === "Live" ? "#d1e7dd" : mod.stage === "Testing" ? "#cfe2ff" : "#f8f9fa", cursor: "pointer" }}
-                          value={mod.stage || "Planning"}
+                      <td className="border-bottom p-2 align-middle">
+                        <input
+                          type="text"
+                          className="form-control form-control-sm border-0 bg-light shadow-sm rounded-pill px-3 text-center"
+                          placeholder="Process..."
+                          value={mod.process || ""}
+                          onChange={(e) => updateField(mod.id, 'process', e.target.value)}
+                          onBlur={(e) => updateField(mod.id, 'process', e.target.value)}
+                        />
+                      </td>
+                      <td className="border-bottom p-2 align-middle">
+                        <input
+                          type="text"
+                          className="form-control form-control-sm border-0 bg-light shadow-sm rounded-pill px-3 text-center"
+                          placeholder="Stage..."
+                          value={mod.stage || ""}
                           onChange={(e) => updateField(mod.id, 'stage', e.target.value)}
-                        >
-                          <option value="Planning">Planning</option>
-                          <option value="Development">Development</option>
-                          <option value="Testing">Testing</option>
-                          <option value="Review">Review</option>
-                          <option value="Live">Live</option>
-                        </select>
+                          onBlur={(e) => updateField(mod.id, 'stage', e.target.value)}
+                        />
                       </td>
                       {["UI", "UX", "Backend", "Testing", "Deployment"].map((taskType) => {
                         const val = parseInt(mod.tasks[taskType]) || 0;
@@ -251,8 +259,8 @@ export default function Home() {
                           autoFocus
                         />
                       </td>
-                      <td colSpan="7" className="border-bottom border-top text-center align-middle">
-                        <span className="text-secondary opacity-75 fst-italic">Stage defaults to Planning. Tasks will initialize at 0%...</span>
+                      <td colSpan="8" className="border-bottom border-top text-center align-middle">
+                        <span className="text-secondary opacity-75 fst-italic">Tasks will initialize at 0%...</span>
                       </td>
                       <td className="text-center py-3 border-bottom border-top align-middle">
                         <div className="d-flex gap-2 justify-content-center">
