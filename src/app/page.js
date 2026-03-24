@@ -154,7 +154,7 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="container-fluid container-xl my-4 my-md-5 flex-grow-1 px-2 px-md-4">
+      <main className="container-fluid my-4 my-md-5 flex-grow-1 px-0 px-md-3">
         <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3 text-center text-md-start">
           <div>
             <h3 className="fw-bold mb-1 fs-4 fs-md-3">Development Modules</h3>
