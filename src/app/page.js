@@ -318,7 +318,15 @@ export default function Home() {
       </main>
 
       <footer className="py-4 text-center text-muted fs-6 mt-auto">
-        Methodize Project Tracker • Google Sheets Integration API
+        <p className="mb-2 fw-medium">Methodize Project Tracker • Node & Google Sheets API</p>
+        <a 
+          href="https://docs.google.com/spreadsheets/d/1Q7jKdXVxRkSx6JC51g65p_rTRAdUhejyKWpOhdDueAc/edit?gid=277571069#gid=277571069" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="btn btn-sm btn-outline-secondary rounded-pill shadow-sm px-3 fw-bold"
+        >
+          📊 View Master Google Sheet
+        </a>
       </footer>
     </div>
   );
