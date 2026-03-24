@@ -178,11 +178,11 @@ export default function Home() {
                   <th className="ps-4 py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "220px" }}>Module Name</th>
                   <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "150px" }}>Process</th>
                   <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "150px" }}>Stage</th>
-                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "110px" }}>UI Design</th>
-                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "110px" }}>UX Design</th>
-                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "110px" }}>Backend</th>
-                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "110px" }}>Testing</th>
-                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "110px" }}>Deployment</th>
+                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "135px" }}>UI Design</th>
+                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "135px" }}>UX Design</th>
+                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "135px" }}>Backend</th>
+                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "135px" }}>Testing</th>
+                  <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "135px" }}>Deployment</th>
                   <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "100px" }}>Progress</th>
                   <th className="ps-3 py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "250px", minWidth: "200px" }}>Remarks</th>
                   <th className="text-center py-3 fw-bold text-secondary text-uppercase fs-7" style={{ width: "50px" }}></th>
@@ -239,7 +239,7 @@ export default function Home() {
                         return (
                           <td key={taskType} className={`border-bottom p-2 text-center align-middle`}>
                             <div className="d-flex align-items-center justify-content-center">
-                              <div className={`input-group input-group-sm rounded-pill shadow-sm overflow-hidden ${getColorClass(val)}`} style={{ maxWidth: '85px', border: '1px solid' }}>
+                              <div className={`input-group input-group-sm rounded-pill shadow-sm overflow-hidden ${getColorClass(val)}`} style={{ minWidth: '100px', border: '1px solid' }}>
                                 <input
                                   type="number"
                                   className="form-control text-center fw-bold border-0 bg-transparent text-inherit"
