@@ -204,31 +204,34 @@ export default function Home() {
                       <td className="ps-3 fw-bold py-2 border-bottom text-dark">
                         <input
                           type="text"
-                          className="form-control border-0 bg-transparent fw-bold fs-6 text-dark px-2 shadow-none"
+                          className="form-control border-0 bg-transparent fw-bold fs-6 text-dark px-2 shadow-none text-truncate"
+                          style={{ maxWidth: "160px" }}
                           value={mod.name || ""}
                           onChange={(e) => updateField(mod.id, 'name', e.target.value)}
                           onBlur={(e) => updateField(mod.id, 'name', e.target.value)}
-                          title="Click to rename module"
+                          title={mod.name || "Click to rename module"}
                         />
                       </td>
                       <td className="border-bottom p-2 align-middle">
                         <input
                           type="text"
-                          className="form-control form-control-sm border-0 bg-light shadow-sm rounded-pill px-3 text-center"
+                          className="form-control form-control-sm border-0 bg-light shadow-sm rounded-pill px-3 text-center text-truncate"
                           placeholder="Process..."
                           value={mod.process || ""}
                           onChange={(e) => updateField(mod.id, 'process', e.target.value)}
                           onBlur={(e) => updateField(mod.id, 'process', e.target.value)}
+                          title={mod.process || "Process"}
                         />
                       </td>
                       <td className="border-bottom p-2 align-middle">
                         <input
                           type="text"
-                          className="form-control form-control-sm border-0 bg-light shadow-sm rounded-pill px-3 text-center"
+                          className="form-control form-control-sm border-0 bg-light shadow-sm rounded-pill px-3 text-center text-truncate"
                           placeholder="Stage..."
                           value={mod.stage || ""}
                           onChange={(e) => updateField(mod.id, 'stage', e.target.value)}
                           onBlur={(e) => updateField(mod.id, 'stage', e.target.value)}
+                          title={mod.stage || "Stage"}
                         />
                       </td>
                       {["UI", "UX", "Backend", "Testing", "Deployment"].map((taskType) => {
@@ -263,11 +266,12 @@ export default function Home() {
                       <td className="border-bottom p-2 align-middle">
                         <input
                           type="text"
-                          className="form-control form-control-sm border-0 bg-light shadow-sm rounded-pill px-3 fst-italic"
+                          className="form-control form-control-sm border-0 bg-light shadow-sm rounded-pill px-3 fst-italic text-truncate"
                           placeholder="Add remark..."
                           value={mod.remarks || ""}
                           onChange={(e) => updateField(mod.id, 'remarks', e.target.value)}
                           onBlur={(e) => updateField(mod.id, 'remarks', e.target.value)}
+                          title={mod.remarks || "Add remark..."}
                         />
                       </td>
                       <td className="text-center border-bottom p-2 align-middle">
